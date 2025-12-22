@@ -56,3 +56,4 @@ def menu(FILE):
         a = True
     
     return user, a, chachakey_hex
+print('hi')
