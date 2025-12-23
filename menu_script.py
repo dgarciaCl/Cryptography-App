@@ -5,6 +5,7 @@ import os
 
 from cryptography_functions import load_users
 from cryptography_functions import add_user
+
 def menu(FILE):
     a = False
     chachakey_hex = str(0)
@@ -56,4 +57,3 @@ def menu(FILE):
         a = True
     
     return user, a, chachakey_hex
-print('hello')
