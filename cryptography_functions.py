@@ -83,9 +83,9 @@ def sign(user, room, time, pwd):
         public_exponent=65537,
         key_size=2048,
     )
-    serialise_private(private_key_byte, 'private', msg, pwd)
+    serialise_private(private_key_byte, msg, pwd)
     public_key_byte = private_key_byte.public_key()
-    serialise_public(public_key_byte, 'public', msg)
+    serialise_public(public_key_byte, msg)
     signature = private_key_byte.sign(
         msg_byte,
         padding.PSS(

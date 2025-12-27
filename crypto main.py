@@ -19,7 +19,7 @@ MASTERKEY = (b"MASTERKEY")
 
 FILE = 'users.json' #this is the file we will be working on
 
-user, a, chachakey_hex = menu(FILE)
+user, a, chachakey_hex, pwd_byte = menu(FILE)
 
 while a:
     c = input("Do you wish to make a reservation (A), check your reservations (B) or exit (E): " )
@@ -30,7 +30,7 @@ while a:
         room = int(input("Book room number: "))
         room = str(room)
         time = input("At time: ")
-        sign(user, room, time)
+        sign(user, room, time, pwd_byte)
 
         room_byte = room.encode("utf-8")
         room_enc, nonceroom = chachapoly_encrypt(room_byte, chachakey_byte)

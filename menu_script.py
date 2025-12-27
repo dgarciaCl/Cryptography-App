@@ -28,9 +28,10 @@ def menu(FILE):
                 p = 1,   #Paralelisation parameter
             )
 
-            bytepwd = bytes.fromhex(users[user][2]) #get the password in bytes to use it in verify
+            correctbytepwd = bytes.fromhex(users[user][2]) #get the password in bytes to use it in verify
+            pwd_byte = pwd.encode("utf-8")
             try:
-                kdf.verify(pwd.encode("utf-8"), bytepwd)    #check if the input == correctpassword
+                kdf.verify(pwd_byte , correctbytepwd)    #check if the input == correctpassword
                 a = True
                 chachakey_hex = users.get(user)[1]
             except cryptography.exceptions.InvalidKey:  #else, catch the exception and print a message
@@ -56,4 +57,4 @@ def menu(FILE):
         add_user(FILE, user, salt_hex, chachakey_hex, pwd_token)   #if user already exists, we will not add it
         a = True
     
-    return user, a, chachakey_hex
+    return user, a, chachakey_hex, pwd_byte
