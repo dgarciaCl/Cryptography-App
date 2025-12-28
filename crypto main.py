@@ -6,6 +6,7 @@ import os
 from menu_script import menu
 from cryptography_functions import load_users
 from cryptography_functions import chachapoly_encrypt
+from cryptography_functions import chachapoly_decrypt
 from cryptography_functions import create_user_file
 from cryptography_functions import sign
 
@@ -43,11 +44,18 @@ while a:
         create_user_file(user, room_hex, nonceroom_hex, time_hex, noncetime_hex)
     elif c == "B":
         reservations = load_users(user + '.json')
-        j = 1
-        for i in reservations:
-            print(f"Reservation {j}: ")
-            print(f"Room: {i[0]}\nTime: {i[2]}")
-            j += 1
+        for j in range(len(reservations[user])):
+            chachakey_byte = bytes.fromhex(chachakey_hex)
+            room_enc = bytes.fromhex(reservations[user][j][0])
+            nonceroom_byte = bytes.fromhex(reservations[user][j][1])
+            room_byte = chachapoly_decrypt(chachakey_byte, room_enc, nonceroom_byte)
+            room = room_byte.decode('utf-8')
+            time_enc = bytes.fromhex(reservations[user][j][2])
+            noncetime_byte = bytes.fromhex(reservations[user][j][3])
+            time_byte = chachapoly_decrypt(chachakey_byte, time_enc, noncetime_byte)
+            time = time_byte.decode('utf-8')
+            print('Reservation ', j+1, ':\nRoom:', room, '\nTime:', time)
+
         verify = str("Do you wish to verify this info?(Y/N): ")
 
 
