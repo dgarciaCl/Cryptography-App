@@ -77,14 +77,14 @@ def serialise_public(key, user):
 
 #Signature of a file
 def sign(user, room, time, pwd):
-    msg = user + room + time
+    msg = user + room + time    #the json will look like {msg: signature}
     msg_byte = msg.encode("utf-8")
-    json_name = msg + ".json"
+    json_name = msg + ".json"   #create a different json for each reservation
     private_key_byte = rsa.generate_private_key(
         public_exponent=65537,
         key_size=2048,
     )
-    serialise_private(private_key_byte, msg, pwd)
+    serialise_private(private_key_byte, msg, pwd)   #TODO: hay que preguntar si aquí es mejor usar la masterkey que definimos al principio
     public_key_byte = private_key_byte.public_key()
     serialise_public(public_key_byte, msg)
     signature = private_key_byte.sign(
@@ -94,9 +94,9 @@ def sign(user, room, time, pwd):
             salt_length=padding.PSS.MAX_LENGTH
         ),
         hashes.SHA256()
-    )
+    )   #signature of the message = user + room + time
     signature_hex = signature.hex()
-    data = {msg:signature_hex}   
+    data = {msg:signature_hex}  #save msg in cleartext and the signature in hex 
     with open(json_name, "w") as json_file: 
         json.dump(data, json_file, indent=4) #Adds the dictionaries' contents in the json  
 
