@@ -15,8 +15,6 @@ MASTERKEY = (b"MASTERKEY")
 # save a json with the signed cleartext. This will be inaccessible by anyone other than the user. PER RESERVATION
 # save each private key generated 
 
-
-
 FILE = 'users.json' #this is the file we will be working on
 
 user, a, chachakey_hex, pwd_byte = menu(FILE)
@@ -49,7 +47,6 @@ while a:
             print(f"Room: {i[0]}\nTime: {i[2]}")
             j += 1
         verify = str("Do you wish to verify this info?(Y/N): ")
-
 
 #HAVE TO IMPLEMENT PKI
 #the public key will be from inside the certificate, not "raw" in publickey.pem

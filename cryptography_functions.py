@@ -14,6 +14,7 @@ import pem
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
 
 #REGISTRATION --------------
+
 def load_users(usersfile): #read the existing users
     if not os.path.exists(usersfile):
         return {}   #returns an empty dictionary if there's no user file (ie. no users yet)
@@ -121,6 +122,7 @@ def verify_sign(json_file, pem_puk):
   
 
 #CREATE FILE ------------
+
 def create_user_file(username, room, roomnonce,  time, timenonce):
     if os.path.exists(username + ".json"):
         userfile = load_users(username + ".json")
