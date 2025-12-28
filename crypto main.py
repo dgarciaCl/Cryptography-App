@@ -9,6 +9,7 @@ from cryptography_functions import chachapoly_encrypt
 from cryptography_functions import chachapoly_decrypt
 from cryptography_functions import create_user_file
 from cryptography_functions import sign
+from cryptography_functions import verify_sign
 
 #THIS IS BAD PRACTICE, USED FOR CONVENIENCE FOR THE DIGITAL SIGNETURE
 MASTERKEY = (b"MASTERKEY")
@@ -55,8 +56,11 @@ while a:
             time_byte = chachapoly_decrypt(chachakey_byte, time_enc, noncetime_byte)
             time = time_byte.decode('utf-8')
             print('Reservation ', j+1, ':\nRoom:', room, '\nTime:', time)
-
-        verify = str("Do you wish to verify this info?(Y/N): ")
+            verify = str(input("Do you wish to verify this info?(Y/N): "))
+            if verify == 'Y' or verify == 'y':
+                json_f = user + room + time + '.json'
+                pem_public = user + room + time + 'public.pem'
+                verified = verify_sign(json_f, pem_public)
 
 
 #HAVE TO IMPLEMENT PKI

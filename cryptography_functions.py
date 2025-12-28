@@ -102,9 +102,9 @@ def sign(user, room, time, pwd):
 #verify the signature
 def verify_sign(json_file, pem_puk):
     info = load_users(json_file)
-    message = info.keys()
+    message = list(info.keys())[0]
     message_byte = message.encode("utf-8")
-    signature_hex = info
+    signature_hex = info[message]
     signature_byte = bytes.fromhex(signature_hex)
     with open(pem_puk, 'rb') as f:
         public_key = serialization.load_pem_public_key(f.read())
