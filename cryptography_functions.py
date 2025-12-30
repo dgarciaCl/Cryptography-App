@@ -8,7 +8,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
 
-from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 import pem
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
