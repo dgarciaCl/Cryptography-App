@@ -14,8 +14,15 @@ def menu(FILE):
     print("2. Register\n")
     action = int(input(">>> "))
 
+    while action not in [1, 2]:
+        print("Wrong option. Please select the index of the function you wish to perform: \n")    #Options menu
+        print("1. Log in")
+        print("2. Register\n")
+        action = int(input(">>> "))
+
     user = str(input("\nUsername: "))   #ask info
     pwd = str(input("\nPassword: "))
+    
     if action == 1: #Login option
         users = load_users(FILE) 
         if user in users:
