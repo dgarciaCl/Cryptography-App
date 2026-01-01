@@ -11,11 +11,8 @@ from cryptography_functions import create_user_file
 from cryptography_functions import sign
 from cryptography_functions import verify_sign
 
-#THIS IS BAD PRACTICE, USED FOR CONVENIENCE FOR THE DIGITAL SIGNETURE
-MASTERKEY = (b"MASTERKEY")
-#####################################################################
-# save a json with the signed cleartext. This will be inaccessible by anyone other than the user. PER RESERVATION
-# save each private key generated 
+
+
 
 FILE = 'users.json' #this is the file we will be working on
 
@@ -23,9 +20,9 @@ user, a, chachakey_hex, pwd_byte = menu(FILE)
 
 while a:
     c = input("Do you wish to make a reservation (A), check your reservations (B) or exit (E): " )
-    if c == "E":
+    if c == "E" or c == 'e':
         a = False
-    elif c == "A":
+    elif c == "A" or c == 'a':
         chachakey_byte = bytes.fromhex(chachakey_hex)
         room = int(input("Book room number: "))
         room = str(room)
@@ -41,7 +38,7 @@ while a:
         time_hex = time_enc.hex()
         noncetime_hex = noncetime.hex()
         create_user_file(user, room_hex, nonceroom_hex, time_hex, noncetime_hex)
-    elif c == "B":
+    elif c == "B" or c == 'b':
         reservations = load_users(user + '.json')
         for j in range(len(reservations[user])):
             chachakey_byte = bytes.fromhex(chachakey_hex)
@@ -69,3 +66,7 @@ while a:
 # cert_CA.public_key() has the public key to verify your certificate's signature
 # cert_CA.public_key() has the public key to verify its own signature 
 #have to use option 2b to create the certificate and 2c to verify
+
+
+#as of 01-01, there's only verification left to implement and draw the public key for the other verification
+#(of the signature) from it

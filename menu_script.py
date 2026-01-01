@@ -5,6 +5,12 @@ import os
 
 from cryptography_functions import load_users
 from cryptography_functions import add_user
+from certificates import csr
+from certificates import signcsr
+
+#THIS IS BAD PRACTICE, USED FOR CONVENIENCE FOR THE CERTIFICATE
+MASTERKEY = (b"MASTERKEY")
+#####################################################################
 
 def menu(FILE):
     a = False
@@ -63,5 +69,7 @@ def menu(FILE):
         pwd_token = Epwd_byte.hex()
         add_user(FILE, user, salt_hex, chachakey_hex, pwd_token)   #if user already exists, we will not add it
         a = True
+        csr(user)
+        signcsr(user, MASTERKEY)
     
     return user, a, chachakey_hex, pwd_byte

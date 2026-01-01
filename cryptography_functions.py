@@ -70,9 +70,7 @@ def serialise_public(key, user):
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
-    filename = user + 'public' + '.pem'
-    with open(filename, "wb") as f:
-        f.write(pem)        #assume this is very secure and inaccessible by anyone
+    
 
 #Signature of a file
 def sign(user, room, time, pwd):
