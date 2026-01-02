@@ -6,7 +6,7 @@ import os
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-
+from cryptography import x509
 
 from cryptography.hazmat.primitives import serialization
 import pem
@@ -62,28 +62,19 @@ def serialise_private(key, user, pwd):
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.BestAvailableEncryption(pwd)
     )
-    filename = user + 'private' + '.pem'
+    filename = user + 'key.pem'
     with open(filename, "wb") as f:
         f.write(pem)        #assume this is very secure and inaccessible by anyone
-def serialise_public(key, user):
-    pem = key.public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo
-    )
-    
 
 #Signature of a file
 def sign(user, room, time, pwd):
     msg = user + room + time    #the json will look like {msg: signature}
     msg_byte = msg.encode("utf-8")
     json_name = msg + ".json"   #create a different json for each reservation
-    private_key_byte = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-    )
-    serialise_private(private_key_byte, msg, pwd)   #TODO: hay que preguntar si aquí es mejor usar la masterkey que definimos al principio
-    public_key_byte = private_key_byte.public_key()
-    serialise_public(public_key_byte, msg)
+    
+    with open(user + 'key.pem', 'rb') as f:
+        private_key_byte = serialization.load_pem_private_key(f.read(), pwd)
+
     signature = private_key_byte.sign(
         msg_byte,
         padding.PSS(
@@ -98,14 +89,16 @@ def sign(user, room, time, pwd):
         json.dump(data, json_file, indent=4) #Adds the dictionaries' contents in the json  
 
 #verify the signature
-def verify_sign(json_file, pem_puk):
+def verify_sign(json_file, user):
     info = load_users(json_file)
     message = list(info.keys())[0]
     message_byte = message.encode("utf-8")
     signature_hex = info[message]
     signature_byte = bytes.fromhex(signature_hex)
-    with open(pem_puk, 'rb') as f:
-        public_key = serialization.load_pem_public_key(f.read())
+    user_cert_path = f'PKI/AC1/nuevoscerts/{user}cert.pem'
+    with open(user_cert_path, "rb") as f:
+        cert = x509.load_pem_x509_certificate(f.read())
+    public_key = cert.public_key()
     public_key.verify(
         signature_byte,
         message_byte,

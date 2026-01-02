@@ -2,9 +2,12 @@ import json
 import cryptography
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 import os
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 from cryptography_functions import load_users
 from cryptography_functions import add_user
+from cryptography_functions import serialise_private
+
 from certificates import csr
 from certificates import signcsr
 from certificates import verify_certificate
@@ -53,6 +56,7 @@ def menu(FILE):
                 print("Invalid password")
         else:
             print("Invalid user")
+            pwd_byte = pwd.encode('utf-8')
 
     elif action == 2:   #Register option
         salt = os.urandom(16)
@@ -71,7 +75,14 @@ def menu(FILE):
         pwd_token = Epwd_byte.hex()
         add_user(FILE, user, salt_hex, chachakey_hex, pwd_token)   #if user already exists, we will not add it
         a = True
-        csr(user)
+        private_key_byte = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+        )
+        pwd_byte = pwd.encode('utf-8')
+        serialise_private(private_key_byte, user, pwd_byte)      #each user has their private key
+        csr(user, pwd_byte)
         signcsr(user, MASTERKEY)
+        
     
     return user, a, chachakey_hex, pwd_byte

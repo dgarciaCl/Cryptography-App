@@ -20,6 +20,8 @@ user, a, chachakey_hex, pwd_byte = menu(FILE)
 
 while a:
     c = input("Do you wish to make a reservation (A), check your reservations (B) or exit (E): " )
+    while c not in ['A', 'B', 'E', 'a', 'b', 'e']:
+        c = input("Invalid. Do you wish to make a reservation (A), check your reservations (B) or exit (E): " )
     if c == "E" or c == 'e':
         a = False
     elif c == "A" or c == 'a':
@@ -55,8 +57,7 @@ while a:
                 verify = str(input("Do you wish to verify this info? (Y/N): "))
                 if verify == 'Y' or verify == 'y':
                     json_f = user + room + time + '.json'
-                    pem_public = user + room + time + 'public.pem'
-                    verified = verify_sign(json_f, pem_public)
+                    verified = verify_sign(json_f, user)
         else:
             print("There are no reservations under", user, "yet")
 

@@ -5,18 +5,11 @@ from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives.asymmetric import padding
 import datetime
 
-def csr(user):
+def csr(user, pwd):
     #extract private key from pem
-    user_key = ec.generate_private_key(ec.SECP256R1())
+    with open(user + 'key.pem', 'rb') as f:
+        user_key = serialization.load_pem_private_key(f.read(), pwd)
 
-    with open(f"{user}key.pem", "wb") as f:
-        f.write(
-            user_key.private_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PrivateFormat.TraditionalOpenSSL,
-                encryption_algorithm=serialization.NoEncryption(),  # or BestAvailableEncryption(b"password")
-            )
-        )
     #subject
     subject = x509.Name([
         x509.NameAttribute(NameOID.COUNTRY_NAME, "ES"),
