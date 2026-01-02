@@ -7,6 +7,7 @@ from cryptography_functions import load_users
 from cryptography_functions import add_user
 from certificates import csr
 from certificates import signcsr
+from certificates import verify_certificate
 
 #THIS IS BAD PRACTICE, USED FOR CONVENIENCE FOR THE CERTIFICATE
 MASTERKEY = (b"MASTERKEY")
@@ -47,6 +48,7 @@ def menu(FILE):
                 kdf.verify(pwd_byte , correctbytepwd)    #check if the input == correctpassword
                 a = True
                 chachakey_hex = users.get(user)[1]
+                verify_certificate(user)
             except cryptography.exceptions.InvalidKey:  #else, catch the exception and print a message
                 print("Invalid password")
         else:

@@ -2,6 +2,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives.asymmetric import padding
 import datetime
 
 def csr(user):
@@ -81,3 +82,37 @@ def signcsr(user, MASTERKEY):
     path_to_signed_cert = f'Cryptography-App-/PKI/AC1/nuevoscerts/{user}cert.pem'
     with open(path_to_signed_cert, 'wb') as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
+
+
+def verify_certificate(user):
+    user_cert_path = f'Cryptography-App-/PKI/AC1/nuevoscerts/{user}cert.pem'
+    with open(user_cert_path, "rb") as f:
+        cert = x509.load_pem_x509_certificate(f.read())
+
+    ca_cert_path = 'Cryptography-App-/PKI/AC1/ac1cert.pem'
+    with open(ca_cert_path, "rb") as f:
+        ca_cert = x509.load_pem_x509_certificate(f.read())
+
+    #check if issuer is our CA
+    if cert.issuer != ca_cert.subject:
+        print("Certificate was not issued by a valid CA")
+        return False
+
+    #signature
+    ca_cert.public_key().verify(
+        cert.signature,
+        cert.tbs_certificate_bytes,
+        padding.PKCS1v15(),   # RSA CA
+        cert.signature_hash_algorithm,
+    )
+    print('User certificate is valid')
+    ca_cert.public_key().verify(
+        ca_cert.signature,
+        ca_cert.tbs_certificate_bytes,
+        padding.PKCS1v15(),   # RSA CA
+        ca_cert.signature_hash_algorithm,
+    )
+    return True
+
+
+
