@@ -40,22 +40,25 @@ while a:
         create_user_file(user, room_hex, nonceroom_hex, time_hex, noncetime_hex)
     elif c == "B" or c == 'b':
         reservations = load_users(user + '.json')
-        for j in range(len(reservations[user])):
-            chachakey_byte = bytes.fromhex(chachakey_hex)
-            room_enc = bytes.fromhex(reservations[user][j][0])
-            nonceroom_byte = bytes.fromhex(reservations[user][j][1])
-            room_byte = chachapoly_decrypt(chachakey_byte, room_enc, nonceroom_byte)
-            room = room_byte.decode('utf-8')
-            time_enc = bytes.fromhex(reservations[user][j][2])
-            noncetime_byte = bytes.fromhex(reservations[user][j][3])
-            time_byte = chachapoly_decrypt(chachakey_byte, time_enc, noncetime_byte)
-            time = time_byte.decode('utf-8')
-            print('Reservation ', j+1, ':\nRoom:', room, '\nTime:', time)
-            verify = str(input("Do you wish to verify this info?(Y/N): "))
-            if verify == 'Y' or verify == 'y':
-                json_f = user + room + time + '.json'
-                pem_public = user + room + time + 'public.pem'
-                verified = verify_sign(json_f, pem_public)
+        if (user in reservations):
+            for j in range(len(reservations[user])):
+                chachakey_byte = bytes.fromhex(chachakey_hex)
+                room_enc = bytes.fromhex(reservations[user][j][0])
+                nonceroom_byte = bytes.fromhex(reservations[user][j][1])
+                room_byte = chachapoly_decrypt(chachakey_byte, room_enc, nonceroom_byte)
+                room = room_byte.decode('utf-8')
+                time_enc = bytes.fromhex(reservations[user][j][2])
+                noncetime_byte = bytes.fromhex(reservations[user][j][3])
+                time_byte = chachapoly_decrypt(chachakey_byte, time_enc, noncetime_byte)
+                time = time_byte.decode('utf-8')
+                print('Reservation:', j+1, '\nRoom:', room, '\nTime:', time)
+                verify = str(input("Do you wish to verify this info? (Y/N): "))
+                if verify == 'Y' or verify == 'y':
+                    json_f = user + room + time + '.json'
+                    pem_public = user + room + time + 'public.pem'
+                    verified = verify_sign(json_f, pem_public)
+        else:
+            print("There are no reservations under", user, "yet")
 
 #HAVE TO IMPLEMENT PKI
 #the public key will be from inside the certificate, not "raw" in publickey.pem
