@@ -39,24 +39,24 @@ def csr(user):
     #serialise to pem
     csr_pem = csr.public_bytes(serialization.Encoding.PEM)
 
-    path = f"Cryptography-App-/PKI/AC1/solicitudes/{user}csr.pem"
+    path = f"PKI/AC1/solicitudes/{user}csr.pem"
     with open(path, "wb") as f:
         f.write(csr_pem)
 
 
 def signcsr(user, MASTERKEY):
     # Load CA private key
-    path_to_CA_private = 'Cryptography-App-/PKI/AC1/privado/ca1key.pem'
+    path_to_CA_private = 'PKI/AC1/privado/ca1key.pem'
     with open(path_to_CA_private, 'rb') as f:
         ca_key = serialization.load_pem_private_key(f.read(), password=MASTERKEY)
 
     # Load CA certificate
-    path_to_CA_cert = 'Cryptography-App-/PKI/AC1/ac1cert.pem'
+    path_to_CA_cert = 'PKI/AC1/ac1cert.pem'
     with open(path_to_CA_cert, 'rb') as f:
         ca_cert = x509.load_pem_x509_certificate(f.read())
 
     # Load user CSR
-    path_to_user_csr = f'Cryptography-App-/PKI/AC1/solicitudes/{user}csr.pem'
+    path_to_user_csr = f'PKI/AC1/solicitudes/{user}csr.pem'
     with open(path_to_user_csr, 'rb') as f:
         csr = x509.load_pem_x509_csr(f.read())
 
@@ -67,8 +67,8 @@ def signcsr(user, MASTERKEY):
         .issuer_name(ca_cert.subject)
         .public_key(csr.public_key())
         .serial_number(x509.random_serial_number())
-        .not_valid_before(datetime.datetime.utcnow())
-        .not_valid_after(datetime.datetime.utcnow() + datetime.timedelta(days=365))
+        .not_valid_before(datetime.datetime.now())
+        .not_valid_after(datetime.datetime.now() + datetime.timedelta(days=365))
     )
 
     # Add all CSR extensions
@@ -79,17 +79,17 @@ def signcsr(user, MASTERKEY):
     cert = cert_builder.sign(private_key=ca_key, algorithm=hashes.SHA256())
 
     # Save signed certificate
-    path_to_signed_cert = f'Cryptography-App-/PKI/AC1/nuevoscerts/{user}cert.pem'
+    path_to_signed_cert = f'PKI/AC1/nuevoscerts/{user}cert.pem'
     with open(path_to_signed_cert, 'wb') as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
 
 
 def verify_certificate(user):
-    user_cert_path = f'Cryptography-App-/PKI/AC1/nuevoscerts/{user}cert.pem'
+    user_cert_path = f'PKI/AC1/nuevoscerts/{user}cert.pem'
     with open(user_cert_path, "rb") as f:
         cert = x509.load_pem_x509_certificate(f.read())
 
-    ca_cert_path = 'Cryptography-App-/PKI/AC1/ac1cert.pem'
+    ca_cert_path = 'PKI/AC1/ac1cert.pem'
     with open(ca_cert_path, "rb") as f:
         ca_cert = x509.load_pem_x509_certificate(f.read())
 
