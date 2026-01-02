@@ -105,6 +105,7 @@ def verify_certificate(user):
         padding.PKCS1v15(),   # RSA CA
         ca_cert.signature_hash_algorithm,
     )
+    print('CA certificate is valid')
     return True
 
 

@@ -11,6 +11,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 import pem
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
+from certificates import verify_certificate
 
 #REGISTRATION --------------
 
@@ -95,6 +96,7 @@ def verify_sign(json_file, user):
     message_byte = message.encode("utf-8")
     signature_hex = info[message]
     signature_byte = bytes.fromhex(signature_hex)
+    verify_certificate(user)
     user_cert_path = f'PKI/AC1/nuevoscerts/{user}cert.pem'
     with open(user_cert_path, "rb") as f:
         cert = x509.load_pem_x509_certificate(f.read())
