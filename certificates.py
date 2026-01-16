@@ -8,9 +8,10 @@ import datetime
 def csr(user, pwd):
     #extract private key from pem
     with open(user + 'key.pem', 'rb') as f:
-        user_key = serialization.load_pem_private_key(f.read(), pwd)
+        #get this user's private key
+        user_key = serialization.load_pem_private_key(f.read(), pwd)   
 
-    #subject
+    #subject info
     subject = x509.Name([
         x509.NameAttribute(NameOID.COUNTRY_NAME, "ES"),
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "MADRID"),
@@ -29,7 +30,7 @@ def csr(user, pwd):
         .sign(user_key, hashes.SHA256())
     )
 
-    #serialise to pem
+    #serialise csr to pem
     csr_pem = csr.public_bytes(serialization.Encoding.PEM)
 
     path = f"PKI/AC1/solicitudes/{user}csr.pem"
@@ -64,24 +65,26 @@ def signcsr(user, MASTERKEY):
         .not_valid_after(datetime.datetime.now() + datetime.timedelta(days=365))
     )
 
-    # Add all CSR extensions
+    #add all CSR extensions
     for ext in csr.extensions:
         cert_builder = cert_builder.add_extension(ext.value, ext.critical)
 
-    # Sign certificate
+    #sign certificate
     cert = cert_builder.sign(private_key=ca_key, algorithm=hashes.SHA256())
 
-    # Save signed certificate
+    #save signed certificate
     path_to_signed_cert = f'PKI/AC1/nuevoscerts/{user}cert.pem'
     with open(path_to_signed_cert, 'wb') as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
 
 
 def verify_certificate(user):
+    #load the user's certificate
     user_cert_path = f'PKI/AC1/nuevoscerts/{user}cert.pem'
     with open(user_cert_path, "rb") as f:
         cert = x509.load_pem_x509_certificate(f.read())
 
+    #load the CA's certificate
     ca_cert_path = 'PKI/AC1/ac1cert.pem'
     with open(ca_cert_path, "rb") as f:
         ca_cert = x509.load_pem_x509_certificate(f.read())
@@ -91,7 +94,7 @@ def verify_certificate(user):
         print("Certificate was not issued by a valid CA")
         return False
 
-    #signature
+    #verify the signature on the user's certificate
     ca_cert.public_key().verify(
         cert.signature,
         cert.tbs_certificate_bytes,
@@ -99,6 +102,7 @@ def verify_certificate(user):
         cert.signature_hash_algorithm,
     )
     print('User certificate is valid')
+    #verify the signature on the CA's certificate
     ca_cert.public_key().verify(
         ca_cert.signature,
         ca_cert.tbs_certificate_bytes,

@@ -27,9 +27,6 @@ def save_users(usersfile, users):
 
 def add_user(usersfile, username, salt, chachakey, hexpassword):
     users = load_users(usersfile)   #create dictionary with all contents in usersfile
-    if username in users:   #if the user is already registered, registration fails
-        print("Username already exists.")
-        return False    #we need a return to throw an error in the main code
     users[username] = [salt]
     users[username].append(chachakey)
     users[username].append(hexpassword)  #otherwise, create an entry in the dictionary with the user and the password and the salt
@@ -75,6 +72,7 @@ def sign(user, room, time, pwd):
     
     with open(user + 'key.pem', 'rb') as f:
         private_key_byte = serialization.load_pem_private_key(f.read(), pwd)
+        #load serialised private key
 
     signature = private_key_byte.sign(
         msg_byte,
@@ -83,7 +81,9 @@ def sign(user, room, time, pwd):
             salt_length=padding.PSS.MAX_LENGTH
         ),
         hashes.SHA256()
-    )   #signature of the message = user + room + time
+    )   
+    #signature of the message = user + room + time
+    
     signature_hex = signature.hex()
     data = {msg:signature_hex}  #save msg in cleartext and the signature in hex 
     with open(json_name, "w") as json_file: 
@@ -92,15 +92,17 @@ def sign(user, room, time, pwd):
 #verify the signature
 def verify_sign(json_file, user):
     info = load_users(json_file)
+    #extract the message in cleartext
     message = list(info.keys())[0]
     message_byte = message.encode("utf-8")
+    #extract the signature 
     signature_hex = info[message]
     signature_byte = bytes.fromhex(signature_hex)
-    verify_certificate(user)
+    verify_certificate(user)    #check if this user's certificate is valid (this function also checks the CA's certificate)
     user_cert_path = f'PKI/AC1/nuevoscerts/{user}cert.pem'
     with open(user_cert_path, "rb") as f:
         cert = x509.load_pem_x509_certificate(f.read())
-    public_key = cert.public_key()
+    public_key = cert.public_key()  #load this user's public key to verify signature
     public_key.verify(
         signature_byte,
         message_byte,
@@ -116,7 +118,7 @@ def verify_sign(json_file, user):
 #CREATE FILE ------------
 
 def create_user_file(username, room, roomnonce,  time, timenonce):
-    if os.path.exists(username + ".json"):
+    if os.path.exists(username + ".json"):  #if this user already has reservations, add to the file
         userfile = load_users(username + ".json")
         userfile[username].append([room, roomnonce, time, timenonce])
         save_users(username + ".json", userfile)
