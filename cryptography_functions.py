@@ -1,16 +1,11 @@
-import json
-import cryptography
-from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
-from cryptography.hazmat.primitives.asymmetric import rsa
 import os
-from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
+import json
 from cryptography import x509
-
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
-import pem
-from cryptography.hazmat.primitives.serialization import load_pem_public_key
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
+
 from certificates import verify_certificate
 
 #REGISTRATION --------------
@@ -31,7 +26,6 @@ def add_user(usersfile, username, salt, chachakey, hexpassword):
     users[username].append(chachakey)
     users[username].append(hexpassword)  #otherwise, create an entry in the dictionary with the user and the password and the salt
     save_users(usersfile, users)    #and rewrite the file with the new info
-    print("User added.")
     return True
 
 #CHACHAPOLY -------------
