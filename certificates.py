@@ -95,21 +95,29 @@ def verify_certificate(user):
         return False
 
     #verify the signature on the user's certificate
-    ca_cert.public_key().verify(
-        cert.signature,
-        cert.tbs_certificate_bytes,
-        padding.PKCS1v15(),   # RSA CA
-        cert.signature_hash_algorithm,
-    )
-    print('User certificate is valid')
+    try:
+        ca_cert.public_key().verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            padding.PKCS1v15(),   # RSA CA
+            cert.signature_hash_algorithm,
+        )
+        print('User certificate is valid')
+    except:
+        print("The user's certificate is not valid")
+        return False
     #verify the signature on the CA's certificate
-    ca_cert.public_key().verify(
-        ca_cert.signature,
-        ca_cert.tbs_certificate_bytes,
-        padding.PKCS1v15(),   # RSA CA
-        ca_cert.signature_hash_algorithm,
-    )
-    print('CA certificate is valid')
+    try:
+        ca_cert.public_key().verify(
+            ca_cert.signature,
+            ca_cert.tbs_certificate_bytes,
+            padding.PKCS1v15(),   # RSA CA
+            ca_cert.signature_hash_algorithm,
+        )
+        print('CA certificate is valid')
+    except:
+        print("The CA's certificate is not valid")
+        return False
     return True
 
 
