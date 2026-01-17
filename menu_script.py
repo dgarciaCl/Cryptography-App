@@ -17,6 +17,8 @@ MASTERKEY = (b"MASTERKEY")
 def menu(FILE):
     run_app = False
     chachakey_hex = str(0)  
+    user = ''
+    pwd_byte = ''
     #^^this is here in case we have an error, so that the return still works.
     #The value will be rewritten
 
