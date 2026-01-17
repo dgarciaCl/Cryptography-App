@@ -19,6 +19,7 @@ while run_app:
 
     if user_choice.capitalize() == "E":
         run_app = False   #E -> exit while loop (end program)
+        
     elif user_choice.capitalize() == "A":
         #extract this user's key to encrypt the info
         chachakey_byte = bytes.fromhex(chachakey_hex) 
