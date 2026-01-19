@@ -24,12 +24,18 @@ def menu(FILE):
 
     print("Please select the index of the function you wish to perform: \n")    #Options menu
     print("1. Log in\n2. Register\n3. Exit\n")
-    action = int(input(">>> "))
+    try:
+        action = int(input(">>> "))
+    except:
+        action = 0
 
     while action not in [1, 2, 3]:
         print("Invalid option. Please select the index of the function you wish to perform: \n")    #Options menu
         print("1. Log in\n2. Register\n3. Exit\n")
-        action = int(input(">>> "))
+        try:
+            action = int(input(">>> "))
+        except:
+            action = 0
 
     if action != 3:
         user = str(input("\nUsername: "))   #ask info
