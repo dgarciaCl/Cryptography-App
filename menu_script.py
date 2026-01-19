@@ -73,7 +73,7 @@ def menu(FILE):
                 p = 1,   #Paralelisation parameter
             )
 
-            chachakey = os.urandom(32)
+            chachakey = os.urandom(32)  #!!!!!!!!!! NOT IN CLEAR
             chachakey_hex = chachakey.hex() #this is to encrypt the data afterwards
             salt_hex = salt.hex()   #convert the salt into a hex to get it in the json
             Epwd_byte = kdf.derive(pwd_byte)    #idem with the pwd

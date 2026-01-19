@@ -5,7 +5,7 @@ from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives.asymmetric import padding
 import datetime
 
-def csr(user, pwd):
+def csr(user, pwd):     
     #extract private key from pem
     with open(user + 'key.pem', 'rb') as f:
         #get this user's private key
