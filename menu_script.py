@@ -2,6 +2,7 @@ import os
 import cryptography
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
 from cryptography_functions import load_users
 from cryptography_functions import add_user
@@ -79,7 +80,7 @@ def menu(FILE):
                 p = 1,   #Paralelisation parameter
             )
 
-            chachakey = os.urandom(32)  #!!!!!!!!!! NOT IN CLEAR
+            chachakey = ChaCha20Poly1305.generate_key() # DO NOT STORE IN CLEAR !!!
             chachakey_hex = chachakey.hex() #this is to encrypt the data afterwards
             salt_hex = salt.hex()   #convert the salt into a hex to get it in the json
             Epwd_byte = kdf.derive(pwd_byte)    #idem with the pwd

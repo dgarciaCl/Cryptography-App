@@ -37,7 +37,6 @@ def csr(user, pwd):
     with open(path, "wb") as f:
         f.write(csr_pem)
 
-
 def signcsr(user, MASTERKEY):
     # Load CA private key
     path_to_CA_private = 'PKI/AC1/privado/ca1key.pem'
@@ -76,7 +75,6 @@ def signcsr(user, MASTERKEY):
     path_to_signed_cert = f'PKI/AC1/nuevoscerts/{user}cert.pem'
     with open(path_to_signed_cert, 'wb') as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
-
 
 def verify_certificate(user):
     #load the user's certificate
@@ -119,6 +117,3 @@ def verify_certificate(user):
         print("The CA's certificate is not valid")
         return False
     return True
-
-
-

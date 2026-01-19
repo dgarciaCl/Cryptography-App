@@ -23,7 +23,7 @@ def save_users(usersfile, users):
 def add_user(usersfile, username, salt, chachakey, hexpassword):
     users = load_users(usersfile)   #create dictionary with all contents in usersfile
     users[username] = [salt]
-    users[username].append(chachakey)
+    users[username].append(chachakey) # THIS WILL LATER NEED TO BE FIXED
     users[username].append(hexpassword)  #otherwise, create an entry in the dictionary with the user and the password and the salt
     save_users(usersfile, users)    #and rewrite the file with the new info
     return True
@@ -31,17 +31,17 @@ def add_user(usersfile, username, salt, chachakey, hexpassword):
 #CHACHAPOLY -------------
 
 #Accepts two binary strings and encrypts the first one
-def chachapoly_encrypt(data, key):
+def chachapoly_encrypt(data, key, aad=None):
     chacha_obj = ChaCha20Poly1305(key) #Creates an object of the chacha class
     nonce = os.urandom(12) #Generates a nonce
-    ciphertext = chacha_obj.encrypt(nonce, data, None) #Encrypts data
+    ciphertext = chacha_obj.encrypt(nonce, data, aad) #Encrypts data
 
     return ciphertext, nonce
 
 #From a cyphertext and a nonce we find out the cleartext
-def chachapoly_decrypt(key, ciphertext, nonce):
+def chachapoly_decrypt(key, ciphertext, nonce, aad=None):
     chacha_obj = ChaCha20Poly1305(key)
-    cleartext = chacha_obj.decrypt(nonce, ciphertext, None) #Decrypts ciphertext
+    cleartext = chacha_obj.decrypt(nonce, ciphertext, aad) #Decrypts ciphertext
 
     return cleartext
 
@@ -86,17 +86,21 @@ def sign(user, room, time, pwd):
 #verify the signature
 def verify_sign(json_file, user):
     info = load_users(json_file)
+
     #extract the message in cleartext
     message = list(info.keys())[0]
     message_byte = message.encode("utf-8")
+
     #extract the signature 
     signature_hex = info[message]
     signature_byte = bytes.fromhex(signature_hex)
     verify_certificate(user)    #check if this user's certificate is valid (this function also checks the CA's certificate)
     user_cert_path = f'PKI/AC1/nuevoscerts/{user}cert.pem'
+
     with open(user_cert_path, "rb") as f:
         cert = x509.load_pem_x509_certificate(f.read())
     public_key = cert.public_key()  #load this user's public key to verify signature
+    
     public_key.verify(
         signature_byte,
         message_byte,
