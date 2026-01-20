@@ -23,6 +23,7 @@ while run_app:
     elif user_choice.capitalize() == "A":
         #extract this user's key to encrypt the info
         chachakey_byte = bytes.fromhex(chachakey_hex) 
+        aad = user.encode("utf-8") #associated authenticated data
 
         #get info for reservation
         room = int(input("Book room number: "))
@@ -32,13 +33,13 @@ while run_app:
 
         #encrypt the room 
         room_byte = room.encode("utf-8")
-        room_enc, nonceroom = chachapoly_encrypt(room_byte, chachakey_byte)
+        room_enc, nonceroom = chachapoly_encrypt(chachakey_byte, room_byte, aad)
         room_hex = room_enc.hex()
         nonceroom_hex= nonceroom.hex()
 
         #encrypt the time 
         time_byte = time.encode("utf-8")
-        time_enc, noncetime = chachapoly_encrypt(time_byte, chachakey_byte)
+        time_enc, noncetime = chachapoly_encrypt(chachakey_byte, time_byte, aad) 
         time_hex = time_enc.hex()
         noncetime_hex = noncetime.hex()
 
@@ -52,30 +53,37 @@ while run_app:
         #if there is at least 1 reservation, print it 
         if (user in reservations):
             for j in range(len(reservations[user])):
-                #get the info from the file
-                chachakey_byte = bytes.fromhex(chachakey_hex)
+                print('--- Reservation', j+1, " ---")
+                try:
+                    #get the info from the file
+                    chachakey_byte = bytes.fromhex(chachakey_hex)
+                    aad = user.encode("utf-8") #associated authenticated data
 
-                #ROOM
-                room_enc = bytes.fromhex(reservations[user][j][0])
-                nonceroom_byte = bytes.fromhex(reservations[user][j][1])
-                room_byte = chachapoly_decrypt(chachakey_byte, room_enc, nonceroom_byte)
-                room = room_byte.decode('utf-8')    #room in cleartext
+                    #ROOM
+                    room_enc = bytes.fromhex(reservations[user][j][0])
+                    nonceroom_byte = bytes.fromhex(reservations[user][j][1])
+                    room_byte = chachapoly_decrypt(chachakey_byte, room_enc, nonceroom_byte, aad)
+                    room = room_byte.decode('utf-8')    #room in cleartext
 
-                #TIME
-                time_enc = bytes.fromhex(reservations[user][j][2])
-                noncetime_byte = bytes.fromhex(reservations[user][j][3])
-                time_byte = chachapoly_decrypt(chachakey_byte, time_enc, noncetime_byte)
-                time = time_byte.decode('utf-8')    #time in cleartext
+                    #TIME
+                    time_enc = bytes.fromhex(reservations[user][j][2])
+                    noncetime_byte = bytes.fromhex(reservations[user][j][3])
+                    time_byte = chachapoly_decrypt(chachakey_byte, time_enc, noncetime_byte, aad)
+                    time = time_byte.decode('utf-8')    #time in cleartext
 
-                #print each reservation
-                print('--- Reservation', j+1, end=(""))
-                print(': ---\nRoom:', room, '\nTime:', time)
-                #ask for verification after each reservation
-                verify = str(input("Do you wish to verify this info? (Y/N): "))
+                    #print each reservation
+                    print('Room:', room, '\nTime:', time)
+                    #ask for verification after each reservation
+                    verify = str(input("Do you wish to verify this info? (Y/N): "))
 
-                #if so, call the function verify
-                if verify.capitalize() == 'Y':
-                    json_f = user + room + time + '.json'
-                    verify_sign(json_f, user)
+                    #if so, call the function verify
+                    if verify.capitalize() == 'Y':
+                        json_f = user + room + time + '.json'
+                        verify_sign(json_f, user)
+                except:
+                    print(
+                        "Unable to verify the reservation data.\n"
+                        "The data may be corrupted or does not belong to this user."
+                    )
         else:
             print("There are no reservations under", user, "yet")

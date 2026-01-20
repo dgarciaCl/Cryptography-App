@@ -31,10 +31,10 @@ def add_user(usersfile, username, salt, chachakey, hexpassword):
 #CHACHAPOLY -------------
 
 #Accepts two binary strings and encrypts the first one
-def chachapoly_encrypt(data, key, aad=None):
+def chachapoly_encrypt(key, cleartext, aad=None):
     chacha_obj = ChaCha20Poly1305(key) #Creates an object of the chacha class
     nonce = os.urandom(12) #Generates a nonce
-    ciphertext = chacha_obj.encrypt(nonce, data, aad) #Encrypts data
+    ciphertext = chacha_obj.encrypt(nonce, cleartext, aad) #Encrypts data
 
     return ciphertext, nonce
 
