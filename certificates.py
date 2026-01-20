@@ -1,9 +1,8 @@
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.x509.oid import NameOID
-from cryptography.hazmat.primitives.asymmetric import padding
 import datetime
+from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding
 
 def csr(user, pwd):     
     #extract private key from pem
@@ -104,6 +103,7 @@ def verify_certificate(user):
     except:
         print("The user's certificate is not valid")
         return False
+    
     #verify the signature on the CA's certificate
     try:
         ca_cert.public_key().verify(

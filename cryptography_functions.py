@@ -31,21 +31,6 @@ def add_user(usersfile, username, pwdsalt, chachasalt, hexpassword):
 
 #CHACHAPOLY -------------
 
-#Accepts two binary strings and encrypts the first one
-def chachapoly_encrypt(key, cleartext, aad=None):
-    chacha_obj = ChaCha20Poly1305(key) #Creates an object of the chacha class
-    nonce = os.urandom(12) #Generates a nonce
-    ciphertext = chacha_obj.encrypt(nonce, cleartext, aad) #Encrypts data
-
-    return ciphertext, nonce
-
-#From a cyphertext and a nonce we find out the cleartext
-def chachapoly_decrypt(key, ciphertext, nonce, aad=None):
-    chacha_obj = ChaCha20Poly1305(key)
-    cleartext = chacha_obj.decrypt(nonce, ciphertext, aad) #Decrypts ciphertext
-
-    return cleartext
-
 #From a salt and the user's password we derive its cryptographic key
 def derive_chachakey(chachasalt, pwd_byte):
     chachakdf = PBKDF2HMAC(
@@ -56,8 +41,20 @@ def derive_chachakey(chachasalt, pwd_byte):
     )
 
     chachakey = chachakdf.derive(pwd_byte) #Derive the chachakey
-
     return chachakey
+
+#Accepts two binary strings and encrypts the first one
+def chachapoly_encrypt(key, cleartext, aad=None):
+    chacha_obj = ChaCha20Poly1305(key) #Creates an object of the chacha class
+    nonce = os.urandom(12) #Generates a nonce
+    ciphertext = chacha_obj.encrypt(nonce, cleartext, aad) #Encrypts data
+    return ciphertext, nonce
+
+#From a cyphertext and a nonce we find out the cleartext
+def chachapoly_decrypt(key, ciphertext, nonce, aad=None):
+    chacha_obj = ChaCha20Poly1305(key)
+    cleartext = chacha_obj.decrypt(nonce, ciphertext, aad) #Decrypts ciphertext
+    return cleartext
 
 #SIGNATURE --------------
 
@@ -68,6 +65,7 @@ def serialise_private(key, user, pwd):
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.BestAvailableEncryption(pwd)
     )
+
     filename = user + 'key.pem'
     with open(filename, "wb") as f:
         f.write(pem)        #assume this is very secure and inaccessible by anyone
@@ -79,8 +77,8 @@ def sign(user, room, time, pwd):
     json_name = msg + ".json"   #create a different json for each reservation
     
     with open(user + 'key.pem', 'rb') as f:
-        private_key_byte = serialization.load_pem_private_key(f.read(), pwd)
         #load serialised private key
+        private_key_byte = serialization.load_pem_private_key(f.read(), pwd)
 
     signature = private_key_byte.sign(
         msg_byte,
@@ -90,8 +88,8 @@ def sign(user, room, time, pwd):
         ),
         hashes.SHA256()
     )   
+
     #signature of the message = user + room + time
-    
     signature_hex = signature.hex()
     data = {msg:signature_hex}  #save msg in cleartext and the signature in hex 
     with open(json_name, "w") as json_file: 
@@ -124,6 +122,7 @@ def verify_sign(json_file, user):
         ),
         hashes.SHA256(),
     )
+
     print("Signature is valid")
 
 #CREATE FILE ------------

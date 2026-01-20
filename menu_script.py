@@ -20,19 +20,18 @@ def menu(FILE):
     chachakey = b''
     user = ''
     pwd_byte = ''
-    #^^this is here in case we have an error, so that the return still works.
-    #The value will be rewritten
+    #^^this is here in case we have an error, so that the return still works. These values will be rewritten
 
-    print("Please select the index of the function you wish to perform: \n")    #Options menu
-    print("1. Log in\n2. Register\n3. Exit\n")
+    print("Please select the index of the function you wish to perform:")    #Options menu
+    print("1. Log in\n2. Register\n3. Exit")
     try:
         action = int(input(">>> "))
     except:
         action = 0
 
     while action not in [1, 2, 3]:
-        print("Invalid option. Please select the index of the function you wish to perform: \n")    #Options menu
-        print("1. Log in\n2. Register\n3. Exit\n")
+        print("Invalid option. Please select the index of the function you wish to perform:")    #Options menu
+        print("1. Log in\n2. Register\n3. Exit")
         try:
             action = int(input(">>> "))
         except:
@@ -67,10 +66,14 @@ def menu(FILE):
             except cryptography.exceptions.InvalidKey:  #else, catch the exception and print a message
                 print("\nIncorrect password")
         else:
-            print("\nThis user doesnt exist. Please register")
-            #if this user doesn't exist, notify it and end the program
+            print("\nThis user doesnt exist")
+            #if this user doesn't exist, notify it and suggest registering
+            register = str(input("Do you wish to register this user? (Y/N): "))
 
-    elif action == 2:   #Register option
+            if register.capitalize() == 'Y':
+                action = 2
+
+    if action == 2:   #Register option
         if user not in users:
             pwd_byte = pwd.encode("utf-8")  #get the input in bytes
             pwd_salt = os.urandom(16) #generate a salt to derive this new user's pwd token
@@ -104,7 +107,7 @@ def menu(FILE):
             csr(user, pwd_byte) #generate a certificate for each new user (first csr, then sign it)
             signcsr(user, MASTERKEY)
         else:
-            print('\nUsername already exists!!')
+            print('\nUsername already in use!!')
 
     #no need to add an option for exit because run_app is False by default
     

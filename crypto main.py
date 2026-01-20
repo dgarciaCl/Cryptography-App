@@ -52,7 +52,7 @@ while run_app:
         #if there is at least 1 reservation, print it 
         if (user in reservations):
             for j in range(len(reservations[user])):
-                print('--- Reservation', j+1, " ---")
+                print('--- Reservation', j+1, "---")
                 try:
                     #get the info from the file
                     aad = user.encode("utf-8") #associated authenticated data
@@ -79,9 +79,6 @@ while run_app:
                         json_f = user + room + time + '.json'
                         verify_sign(json_f, user)
                 except:
-                    print(
-                        "Unable to verify the reservation data.\n"
-                        "The data may be corrupted or does not belong to this user."
-                    )
+                    print("Unable to verify the reservation data.\nThe data may be corrupted or does not belong to this user.")
         else:
             print("There are no reservations under", user, "yet")
