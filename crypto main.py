@@ -9,7 +9,7 @@ from cryptography_functions import verify_sign
 
 FILE = 'users.json' #this is the file we will be working on
 
-user, run_app, chachakey_hex, pwd_byte = menu(FILE)
+user, run_app, chachakey, pwd_byte = menu(FILE)
 
 while run_app:
     user_choice = input("\nDo you wish to make a reservation (A), check your reservations (B) or exit (E): ")
@@ -22,7 +22,6 @@ while run_app:
         
     elif user_choice.capitalize() == "A":
         #extract this user's key to encrypt the info
-        chachakey_byte = bytes.fromhex(chachakey_hex) 
         aad = user.encode("utf-8") #associated authenticated data
 
         #get info for reservation
@@ -33,13 +32,13 @@ while run_app:
 
         #encrypt the room 
         room_byte = room.encode("utf-8")
-        room_enc, nonceroom = chachapoly_encrypt(chachakey_byte, room_byte, aad)
+        room_enc, nonceroom = chachapoly_encrypt(chachakey, room_byte, aad)
         room_hex = room_enc.hex()
         nonceroom_hex= nonceroom.hex()
 
         #encrypt the time 
         time_byte = time.encode("utf-8")
-        time_enc, noncetime = chachapoly_encrypt(chachakey_byte, time_byte, aad) 
+        time_enc, noncetime = chachapoly_encrypt(chachakey, time_byte, aad) 
         time_hex = time_enc.hex()
         noncetime_hex = noncetime.hex()
 
@@ -56,19 +55,18 @@ while run_app:
                 print('--- Reservation', j+1, " ---")
                 try:
                     #get the info from the file
-                    chachakey_byte = bytes.fromhex(chachakey_hex)
                     aad = user.encode("utf-8") #associated authenticated data
 
                     #ROOM
                     room_enc = bytes.fromhex(reservations[user][j][0])
                     nonceroom_byte = bytes.fromhex(reservations[user][j][1])
-                    room_byte = chachapoly_decrypt(chachakey_byte, room_enc, nonceroom_byte, aad)
+                    room_byte = chachapoly_decrypt(chachakey, room_enc, nonceroom_byte, aad)
                     room = room_byte.decode('utf-8')    #room in cleartext
 
                     #TIME
                     time_enc = bytes.fromhex(reservations[user][j][2])
                     noncetime_byte = bytes.fromhex(reservations[user][j][3])
-                    time_byte = chachapoly_decrypt(chachakey_byte, time_enc, noncetime_byte, aad)
+                    time_byte = chachapoly_decrypt(chachakey, time_enc, noncetime_byte, aad)
                     time = time_byte.decode('utf-8')    #time in cleartext
 
                     #print each reservation

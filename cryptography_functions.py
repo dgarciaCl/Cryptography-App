@@ -4,6 +4,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
 from certificates import verify_certificate
@@ -20,10 +21,10 @@ def save_users(usersfile, users):
     with open(usersfile, 'w') as file:   
         json.dump(users, file, indent=4)  #rewrites the file with all new users
 
-def add_user(usersfile, username, salt, chachakey, hexpassword):
+def add_user(usersfile, username, pwdsalt, chachasalt, hexpassword):
     users = load_users(usersfile)   #create dictionary with all contents in usersfile
-    users[username] = [salt]
-    users[username].append(chachakey) # THIS WILL LATER NEED TO BE FIXED
+    users[username] = [pwdsalt]
+    users[username].append(chachasalt)
     users[username].append(hexpassword)  #otherwise, create an entry in the dictionary with the user and the password and the salt
     save_users(usersfile, users)    #and rewrite the file with the new info
     return True
@@ -44,6 +45,19 @@ def chachapoly_decrypt(key, ciphertext, nonce, aad=None):
     cleartext = chacha_obj.decrypt(nonce, ciphertext, aad) #Decrypts ciphertext
 
     return cleartext
+
+#From a salt and the user's password we derive its cryptographic key
+def derive_chachakey(chachasalt, pwd_byte):
+    chachakdf = PBKDF2HMAC(
+        algorithm = hashes.SHA256(),
+        length = 32, #Chachakeys need to be of length 32
+        salt = chachasalt,
+        iterations = 1_200_000 #Recommended: highest possible
+    )
+
+    chachakey = chachakdf.derive(pwd_byte) #Derive the chachakey
+
+    return chachakey
 
 #SIGNATURE --------------
 
@@ -111,7 +125,6 @@ def verify_sign(json_file, user):
         hashes.SHA256(),
     )
     print("Signature is valid")
-  
 
 #CREATE FILE ------------
 

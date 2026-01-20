@@ -1,12 +1,12 @@
 import os
 import cryptography
-from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
+from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 
 from cryptography_functions import load_users
 from cryptography_functions import add_user
 from cryptography_functions import serialise_private
+from cryptography_functions import derive_chachakey
 
 from certificates import csr
 from certificates import signcsr
@@ -17,7 +17,7 @@ MASTERKEY = (b"MASTERKEY")
 
 def menu(FILE):
     run_app = False
-    chachakey_hex = str(0)  
+    chachakey = b''
     user = ''
     pwd_byte = ''
     #^^this is here in case we have an error, so that the return still works.
@@ -45,48 +45,52 @@ def menu(FILE):
     
     if action == 1: #Login option
         if user in users:   #check if the user indeed exists
-            salt = bytes.fromhex(users.get(user)[0])    #get the salt in bytes to use it in the function verify
+            pwd_salt = bytes.fromhex(users.get(user)[0])    #get the salt in bytes to use it in the function verify
             kdf = Scrypt(
-                salt = salt,
+                salt = pwd_salt,
                 length = 32,
                 n = 2**14,   #CPT memory cost parameter
                 r = 8,   #Block size
                 p = 1,   #Paralelisation parameter
             )
 
-            correctbytepwd = bytes.fromhex(users[user][2]) #get the correct password in bytes to use it in verify
+            pwd_token = bytes.fromhex(users[user][2]) #get the correct password in bytes to use it in verify
             pwd_byte = pwd.encode("utf-8")  #input password in bytes
             
             try:
-                kdf.verify(pwd_byte , correctbytepwd)    #check if the input == correctpassword
+                kdf.verify(pwd_byte, pwd_token)    #check if the input == correctpassword
                 run_app = True
-                chachakey_hex = users.get(user)[1]
+                chachasalt_hex = users.get(user)[1]    #get the salt used to find the chachakey
+                chachasalt = bytes.fromhex(chachasalt_hex) #convert it back binary
+                chachakey = derive_chachakey(chachasalt, pwd_byte)  #derive the chachakey
                 verify_certificate(user)    #check if this user's certificate is valid (automatically chacks the CA's as well)
             except cryptography.exceptions.InvalidKey:  #else, catch the exception and print a message
-                print("\nInvalid password")
+                print("\nIncorrect password")
         else:
-            print("\nInvalid user")
+            print("\nThis user doesnt exist. Please register")
             #if this user doesn't exist, notify it and end the program
 
     elif action == 2:   #Register option
         if user not in users:
-            salt = os.urandom(16)   #generate what is needed to generate this new user's data
             pwd_byte = pwd.encode("utf-8")  #get the input in bytes
+            pwd_salt = os.urandom(16) #generate a salt to derive this new user's pwd token
+            salt_hex = pwd_salt.hex() 
             kdf = Scrypt(
-                salt = salt,
+                salt = pwd_salt,
                 length = 32,
                 n = 2**14,   #CPT memory cost parameter
                 r = 8,   #Block size
                 p = 1,   #Paralelisation parameter
             )
 
-            chachakey = ChaCha20Poly1305.generate_key() # DO NOT STORE IN CLEAR !!!
-            chachakey_hex = chachakey.hex() #this is to encrypt the data afterwards
-            salt_hex = salt.hex()   #convert the salt into a hex to get it in the json
             Epwd_byte = kdf.derive(pwd_byte)    #idem with the pwd
             pwd_token = Epwd_byte.hex()
 
-            add_user(FILE, user, salt_hex, chachakey_hex, pwd_token)  
+            chachasalt = os.urandom(16) #generate a different salt to derive the chachakey
+            chachasalt_hex = chachasalt.hex() #convert to hex to store it
+            chachakey = derive_chachakey(chachasalt, pwd_byte) #derive the chachakey
+
+            add_user(FILE, user, salt_hex, chachasalt_hex, pwd_token)  
             print("\nUser added.")
             run_app = True
             
@@ -100,8 +104,8 @@ def menu(FILE):
             csr(user, pwd_byte) #generate a certificate for each new user (first csr, then sign it)
             signcsr(user, MASTERKEY)
         else:
-            print('\nUser already exists!!')
+            print('\nUsername already exists!!')
 
     #no need to add an option for exit because run_app is False by default
     
-    return user, run_app, chachakey_hex, pwd_byte
+    return user, run_app, chachakey, pwd_byte
