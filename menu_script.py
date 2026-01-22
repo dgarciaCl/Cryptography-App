@@ -77,7 +77,7 @@ def menu(FILE):
         if user not in users:
             pwd_byte = pwd.encode("utf-8")  #get the input in bytes
             pwd_salt = os.urandom(16) #generate a salt to derive this new user's pwd token
-            salt_hex = pwd_salt.hex() 
+            pwd_salt_hex = pwd_salt.hex() 
             kdf = Scrypt(
                 salt = pwd_salt,
                 length = 32,
@@ -93,7 +93,7 @@ def menu(FILE):
             chachasalt_hex = chachasalt.hex() #convert to hex to store it
             chachakey = derive_chachakey(chachasalt, pwd_byte) #derive the chachakey
 
-            add_user(FILE, user, salt_hex, chachasalt_hex, pwd_token)  
+            add_user(FILE, user, pwd_salt_hex, chachasalt_hex, pwd_token)  
             print("\nUser added.")
             run_app = True
             
