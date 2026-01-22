@@ -21,11 +21,11 @@ def save_users(usersfile, users):
     with open(usersfile, 'w') as file:   
         json.dump(users, file, indent=4)  #rewrites the file with all new users
 
-def add_user(usersfile, username, pwdsalt, chachasalt, hexpassword):
+def add_user(usersfile, username, pwdsalt, chachasalt, hex_pwd_token):
     users = load_users(usersfile)   #create dictionary with all contents in usersfile
     users[username] = [pwdsalt]
     users[username].append(chachasalt)
-    users[username].append(hexpassword)  #otherwise, create an entry in the dictionary with the user and the password and the salt
+    users[username].append(hex_pwd_token)  #otherwise, create an entry in the dictionary with the user and the password and the salt
     save_users(usersfile, users)    #and rewrite the file with the new info
     return True
 
