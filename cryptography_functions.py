@@ -39,7 +39,6 @@ def derive_chachakey(chachasalt, pwd_byte):
         salt = chachasalt,
         iterations = 1_200_000 #Recommended: highest possible
     )
-
     chachakey = chachakdf.derive(pwd_byte) #Derive the chachakey
     return chachakey
 
